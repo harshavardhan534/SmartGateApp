@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Smart Railway Gate</title>
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet"
+    href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>🚉 Smart Railway Gate</h1>
+
+    {% if status == "OPEN" %}
+        <div class="status open">OPEN</div>
+    {% else %}
+        <div class="status closed">CLOSED</div>
+    {% endif %}
+
+    <h3>Waiting Users: {{ waiting }}</h3>
+
+    <p>Updated: {{ updated }}</p>
+
+    <button onclick="sendLocation()">
+        Share My Location
+    </button>
+
+</div>
+
+<script src="{{ url_for('static',
+filename='script.js') }}"></script>
+
+</body>
+</html>
