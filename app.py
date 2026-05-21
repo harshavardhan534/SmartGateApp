@@ -114,12 +114,26 @@ def location():
     else:
         data["status"] = "OPEN"
 
-    save_data(data)
+    save_data(data) 
+    
+# Distance of current user from gate
 
-    return jsonify({
-        "message": "Location received",
-        "status": data["status"]
-    })
+current_distance = calculate_distance(
+    user["lat"],
+    user["lon"],
+    GATE_LAT,
+    GATE_LON
+)
+
+return jsonify({
+
+    "message": "Location received",
+
+    "status": data["status"],
+
+    "distance": round(current_distance, 2)
+
+})
 
 # ---------------------------------
 # RUN APP
