@@ -1,24 +1,11 @@
 function sendLocation(){
 
-    if(!navigator.geolocation){
-
-        alert("Geolocation not supported");
-        return;
-
-    }
-
     navigator.geolocation.getCurrentPosition(
-
         success,
-
         error,
-
         {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
+            enableHighAccuracy: true
         }
-
     );
 
 }
@@ -49,46 +36,24 @@ function success(position){
 
     .then(data => {
 
-        alert(
+        document.getElementById("gate").innerHTML =
+            data.gate;
 
-    "Gate Status: " + data.status +
+        document.getElementById("distance").innerHTML =
+            data.distance + " meters";
 
-    "\nDistance From Gate: " +
-
-    data.distance + " meters"
-
-);
-
-        location.reload();
+        document.getElementById("status").innerHTML =
+            data.status;
 
     });
 
 }
 
-function error(err){
+function error(){
 
-    if(err.code === 1){
-
-        alert("Location permission denied");
-
-    }
-
-    else if(err.code === 2){
-
-        alert("Location unavailable");
-
-    }
-
-    else if(err.code === 3){
-
-        alert("Location request timed out");
-
-    }
-
-    else{
-
-        alert("Unknown GPS error");
-
-    }
+    alert("Location permission denied");
 
 }
+
+# AUTO REFRESH EVERY 5 SECONDS
+setInterval(sendLocation, 5000);
