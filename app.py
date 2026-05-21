@@ -12,7 +12,6 @@ users = []
 
 # ---------------------------------
 # RAILWAY GATE COORDINATES
-# Replace with your real gate coords
 # ---------------------------------
 
 GATE_LAT = 15.1514586
@@ -89,7 +88,6 @@ def location():
 
     for u in users:
 
-        # Distance from railway gate
         distance = calculate_distance(
             u["lat"],
             u["lon"],
@@ -108,32 +106,31 @@ def location():
     data["waiting_users"] = waiting_users
     data["last_updated"] = datetime.now().strftime("%I:%M:%S %p")
 
-    # Gate Logic
+    # Gate logic
     if waiting_users >= 3:
         data["status"] = "CLOSED"
     else:
         data["status"] = "OPEN"
 
-save_data(data)
+    save_data(data)
 
-# Distance of current user from gate
+    # Current user's distance from gate
+    current_distance = calculate_distance(
+        user["lat"],
+        user["lon"],
+        GATE_LAT,
+        GATE_LON
+    )
 
-current_distance = calculate_distance(
-    user["lat"],
-    user["lon"],
-    GATE_LAT,
-    GATE_LON
-)
+    return jsonify({
 
-return jsonify({
+        "message": "Location received",
 
-    "message": "Location received",
+        "status": data["status"],
 
-    "status": data["status"],
+        "distance": round(current_distance, 2)
 
-    "distance": round(current_distance, 2)
-
-})
+    })
 
 # ---------------------------------
 # RUN APP
