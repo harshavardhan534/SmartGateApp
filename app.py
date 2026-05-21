@@ -114,8 +114,8 @@ def location():
     else:
         data["status"] = "OPEN"
 
-    save_data(data) 
-    
+save_data(data)
+
 # Distance of current user from gate
 
 current_distance = calculate_distance(
