@@ -161,13 +161,35 @@ def location():
     # GATE STATUS LOGIC
     # ------------------------------------------------
 
-    if waiting_users >= 3:
+    # Number of nearby users
+nearby_users = 0
 
-        data["status"] = "CLOSED"
+for u in users:
 
-    else:
+    gate, distance = find_nearest_gate(
+        u["lat"],
+        u["lon"]
+    )
 
-        data["status"] = "OPEN"
+    if distance < 100:
+
+        nearby_users += 1
+
+# --------------------------------
+# SMART STATUS LOGIC
+# --------------------------------
+
+if nearby_users == 0:
+
+    data["status"] = "UNKNOWN"
+
+elif waiting_users >= 3:
+
+    data["status"] = "CLOSED"
+
+else:
+
+    data["status"] = "OPEN"
 
     save_data(data)
 
