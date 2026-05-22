@@ -67,60 +67,72 @@ def home():
 @app.route("/location", methods=["POST"])
 def location():
 
-    global users
+    data = load_data()
 
     user = request.json
 
-    users.append(user)
+    user_id = user.get("user_id")
 
-    # Limit memory
-    if len(users) > 100:
+    user_lat = user["latitude"]
+    user_lon = user["longitude"]
 
-        users = users[-100:]
+    speed = user.get("speed", 0)
 
-    gate_results = []
+    # Store active users
+    active_users = {}
 
-    # -----------------------------------
+    active_users[user_id] = {
+        "lat": user_lat,
+        "lon": user_lon,
+        "speed": speed
+    }
+
     # CHECK EACH GATE
-    # -----------------------------------
 
-    for gate in gates:
+    for gate_id, gate in GATES.items():
 
         nearby_users = 0
         waiting_users = 0
 
-        for u in users:
+        gate_lat = gate["lat"]
+        gate_lon = gate["lon"]
+
+        user_distance = calculate_distance(
+            user_lat,
+            user_lon,
+            gate_lat,
+            gate_lon
+        )
+
+        # Check active users
+
+        for uid, u in active_users.items():
 
             distance = calculate_distance(
-
                 u["lat"],
                 u["lon"],
-
-                gate["lat"],
-                gate["lon"]
-
+                gate_lat,
+                gate_lon
             )
 
-            # Nearby user
-            if distance < 100:
+            # Nearby within 100m
+
+            if distance <= 100:
 
                 nearby_users += 1
 
-                speed = u.get("speed")
+                # Waiting if speed slow
 
-                if speed is None or speed < 2:
-
+                if u["speed"] < 2:
                     waiting_users += 1
 
-        # -----------------------------------
-        # GATE STATUS
-        # -----------------------------------
+        # STATUS
 
         if nearby_users == 0:
 
-            status = "UNKNOWN"
+            status = "NO DATA"
 
-        elif waiting_users >= 3:
+        elif waiting_users >= 1:
 
             status = "CLOSED"
 
@@ -128,20 +140,9 @@ def location():
 
             status = "OPEN"
 
-        # Current user's distance
-        current_distance = calculate_distance(
+        # SAVE
 
-            user["lat"],
-            user["lon"],
-
-            gate["lat"],
-            gate["lon"]
-
-        )
-
-        gate_results.append({
-
-            "name": gate["name"],
+        data[gate_id] = {
 
             "status": status,
 
@@ -149,15 +150,19 @@ def location():
 
             "nearby_users": nearby_users,
 
-            "distance": round(current_distance, 2),
+            "distance": round(user_distance, 1),
 
-            "updated": datetime.now().strftime(
+            "last_updated": datetime.now().strftime(
                 "%I:%M:%S %p"
             )
 
-        })
+        }
 
-    return jsonify(gate_results)
+    save_data(data)
+
+    return jsonify({
+        "message": "Location updated"
+    })
 
 # -----------------------------------
 # RUN APP
