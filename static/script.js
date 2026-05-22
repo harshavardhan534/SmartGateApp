@@ -15,7 +15,17 @@ function sendLocation(position) {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+
+    user_id: navigator.userAgent,
+
+    latitude: userLat,
+
+    longitude: userLon,
+
+    speed: position.coords.speed || 0
+
+})
     })
     .then(response => response.json())
     .then(data => {
