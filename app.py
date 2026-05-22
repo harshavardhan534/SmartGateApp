@@ -12,23 +12,24 @@ DATA_FILE = "database/data.json"
 users = []
 
 # ------------------------------------------------
-# MULTIPLE RAILWAY GATES
+# RAILWAY GATES
 # Replace with real coordinates
 # ------------------------------------------------
 
 gates = [
 
     {
-        "name": "Cantonment Gate",
-        "lat": 15.1514586,
-        "lon": 76.8938312
+        "name": "Gate A",
+        "lat": 12.9716,
+        "lon": 77.5946
     },
 
     {
-        "name": "Radio Park Gate",
-        "lat": 15.1445935,
-        "lon": 76.9047562
+        "name": "Gate B",
+        "lat": 12.9725,
+        "lon": 77.5955
     }
+
 ]
 
 # ------------------------------------------------
@@ -50,7 +51,7 @@ def save_data(data):
         json.dump(data, file, indent=4)
 
 # ------------------------------------------------
-# CALCULATE DISTANCE
+# DISTANCE CALCULATION
 # ------------------------------------------------
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -60,10 +61,10 @@ def calculate_distance(lat1, lon1, lat2, lon2):
     dlat = radians(lat2 - lat1)
     dlon = radians(lon2 - lon1)
 
-    a = sin(dlat / 2)**2 + \
+    a = sin(dlat / 2) ** 2 + \
         cos(radians(lat1)) * \
         cos(radians(lat2)) * \
-        sin(dlon / 2)**2
+        sin(dlon / 2) ** 2
 
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
 
@@ -111,11 +112,13 @@ def home():
     )
 
 # ------------------------------------------------
-# RECEIVE USER LOCATION
+# RECEIVE LOCATION
 # ------------------------------------------------
 
 @app.route("/location", methods=["POST"])
 def location():
+
+    global users
 
     data = load_data()
 
@@ -123,13 +126,18 @@ def location():
 
     users.append(user)
 
-    # Find nearest gate
+    # Prevent huge memory usage
+    if len(users) > 100:
+        users = users[-100:]
+
+    # Current user nearest gate
     nearest_gate, current_distance = find_nearest_gate(
         user["lat"],
         user["lon"]
     )
 
     waiting_users = 0
+    nearby_users = 0
 
     # Check all users
     for u in users:
@@ -139,8 +147,10 @@ def location():
             u["lon"]
         )
 
-        # Only count nearby users
+        # Only nearby users
         if distance < 100:
+
+            nearby_users += 1
 
             speed = u.get("speed")
 
@@ -149,47 +159,28 @@ def location():
 
                 waiting_users += 1
 
-    # Save waiting users
+    # Save values
     data["waiting_users"] = waiting_users
 
-    # Last updated time
     data["last_updated"] = datetime.now().strftime(
         "%I:%M:%S %p"
     )
 
     # ------------------------------------------------
-    # GATE STATUS LOGIC
+    # SMART STATUS LOGIC
     # ------------------------------------------------
 
-    # Number of nearby users
-nearby_users = 0
+    if nearby_users == 0:
 
-for u in users:
+        data["status"] = "UNKNOWN"
 
-    gate, distance = find_nearest_gate(
-        u["lat"],
-        u["lon"]
-    )
+    elif waiting_users >= 3:
 
-    if distance < 100:
+        data["status"] = "CLOSED"
 
-        nearby_users += 1
+    else:
 
-# --------------------------------
-# SMART STATUS LOGIC
-# --------------------------------
-
-if nearby_users == 0:
-
-    data["status"] = "UNKNOWN"
-
-elif waiting_users >= 3:
-
-    data["status"] = "CLOSED"
-
-else:
-
-    data["status"] = "OPEN"
+        data["status"] = "OPEN"
 
     save_data(data)
 
@@ -198,8 +189,6 @@ else:
     # ------------------------------------------------
 
     return jsonify({
-
-        "message": "Location received",
 
         "status": data["status"],
 
