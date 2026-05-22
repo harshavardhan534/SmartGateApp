@@ -31,11 +31,9 @@ body{
 }
 
 .closed{
-    color:#ef4444;
+    color:red;
 }
-.unknown{
-    color:#facc15;
-}
+
 button{
 
     padding:15px;
