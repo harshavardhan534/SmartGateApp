@@ -1,286 +1,212 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
+    <title>Smart Railway Gates</title>
 
-<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <style>
 
-<title>Smart Railway Gates</title>
+        body{
+            background:#041033;
+            color:white;
+            font-family:Arial;
+            margin:0;
+            padding:20px;
+        }
 
-<style>
+        h1{
+            color:#37b6ff;
+            font-size:42px;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial;
-}
+        .card{
+            background:#0d1b4d;
+            padding:20px;
+            border-radius:20px;
+            margin-top:25px;
+            box-shadow:0 0 10px rgba(0,0,0,0.4);
+        }
 
-body{
+        .status{
+            font-size:32px;
+            font-weight:bold;
+            margin-top:10px;
+        }
 
-    background:#0f172a;
+        .open{
+            color:#00ff7f;
+        }
 
-    color:white;
+        .closed{
+            color:red;
+        }
 
-    padding:20px;
-}
+        .unknown{
+            color:orange;
+        }
 
-h1{
+        .info{
+            font-size:22px;
+            margin-top:10px;
+        }
 
-    text-align:center;
+        button{
+            width:100%;
+            padding:18px;
+            border:none;
+            border-radius:15px;
+            background:#37b6ff;
+            color:white;
+            font-size:22px;
+            margin-top:20px;
+        }
 
-    margin-bottom:25px;
-
-    color:#38bdf8;
-}
-
-.container{
-
-    max-width:500px;
-
-    margin:auto;
-}
-
-.card{
-
-    background:#1e293b;
-
-    padding:20px;
-
-    border-radius:20px;
-
-    margin-bottom:20px;
-}
-
-.status{
-
-    font-size:32px;
-
-    font-weight:bold;
-
-    margin:15px 0;
-}
-
-.open{
-    color:#22c55e;
-}
-
-.closed{
-    color:#ef4444;
-}
-
-.unknown{
-    color:#facc15;
-}
-
-.box{
-
-    background:#334155;
-
-    padding:12px;
-
-    border-radius:12px;
-
-    margin-top:10px;
-}
-
-.label{
-
-    color:#94a3b8;
-
-    font-size:14px;
-}
-
-.value{
-
-    font-size:20px;
-
-    font-weight:bold;
-
-    margin-top:5px;
-}
-
-button{
-
-    width:100%;
-
-    padding:15px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:#38bdf8;
-
-    color:white;
-
-    font-size:18px;
-
-    margin-top:20px;
-
-    cursor:pointer;
-}
-
-</style>
-
+    </style>
 </head>
 
 <body>
 
-<h1>🚉 Smart Railway Gates</h1>
+    <h1>🚆 Smart Railway Gates</h1>
 
-<div class="container"
-     id="gatesContainer">
+    <div class="card">
 
-</div>
+        <h2>Gate 1</h2>
+
+        <div id="status1" class="status unknown">
+            CHECKING...
+        </div>
+
+        <div id="waiting1" class="info">
+            Waiting Users: 0
+        </div>
+
+        <div id="updated1" class="info">
+            Last Updated: --
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Gate 2</h2>
+
+        <div id="status2" class="status unknown">
+            CHECKING...
+        </div>
+
+        <div id="waiting2" class="info">
+            Waiting Users: 0
+        </div>
+
+        <div id="updated2" class="info">
+            Last Updated: --
+        </div>
+
+    </div>
+
+    <button onclick="openLocationSettings()">
+        Enable Location
+    </button>
 
 <script>
 
-function sendLocation(){
+function openLocationSettings(){
 
-    navigator.geolocation.getCurrentPosition(
-
-        success,
-        error,
-
-        {
-            enableHighAccuracy:true
-        }
-
-    );
-
+    alert("Please enable GPS/location from phone settings");
 }
 
-function success(position){
+function updateData(){
 
-    let data = {
-
-        lat: position.coords.latitude,
-
-        lon: position.coords.longitude,
-
-        speed: position.coords.speed || 0
-
-    };
-
-    fetch('/location', {
-
-        method:'POST',
-
-        headers:{
-            'Content-Type':'application/json'
-        },
-
-        body: JSON.stringify(data)
-
-    })
-
+    fetch("/data")
     .then(response => response.json())
-
     .then(data => {
 
-        let container =
-            document.getElementById(
-                "gatesContainer"
-            );
+        updateGate(
+            "1",
+            data.gate1.status,
+            data.gate1.waiting_users,
+            data.gate1.last_updated
+        );
 
-        container.innerHTML = "";
+        updateGate(
+            "2",
+            data.gate2.status,
+            data.gate2.waiting_users,
+            data.gate2.last_updated
+        );
+    });
+}
 
-        data.forEach(gate => {
+function updateGate(number,status,waiting,updated){
 
-            let colorClass = "unknown";
+    let statusElement =
+        document.getElementById("status"+number);
 
-            if(gate.status == "OPEN"){
+    statusElement.innerHTML = status;
 
-                colorClass = "open";
+    if(status=="OPEN"){
+        statusElement.className = "status open";
+    }
 
-            }
-            else if(gate.status == "CLOSED"){
+    else if(status=="CLOSED"){
+        statusElement.className = "status closed";
+    }
 
-                colorClass = "closed";
-            }
+    else{
+        statusElement.className = "status unknown";
+    }
 
-            container.innerHTML += `
+    document.getElementById(
+        "waiting"+number
+    ).innerHTML =
+        "Waiting Users: " + waiting;
 
-            <div class="card">
+    document.getElementById(
+        "updated"+number
+    ).innerHTML =
+        "Last Updated: " + updated;
+}
 
-                <h2>${gate.name}</h2>
+navigator.geolocation.watchPosition(
 
-                <div class="status ${colorClass}">
-                    ${gate.status}
-                </div>
+function(position){
 
-                <div class="box">
+    fetch("/location",{
 
-                    <div class="label">
-                        Distance From Gate
-                    </div>
+        method:"POST",
 
-                    <div class="value">
-                        ${gate.distance} meters
-                    </div>
+        headers:{
+            "Content-Type":"application/json"
+        },
 
-                </div>
+        body:JSON.stringify({
 
-                <div class="box">
+            latitude:position.coords.latitude,
+            longitude:position.coords.longitude,
+            speed:position.coords.speed || 0
 
-                    <div class="label">
-                        Waiting Users
-                    </div>
-
-                    <div class="value">
-                        ${gate.waiting_users}
-                    </div>
-
-                </div>
-
-                <div class="box">
-
-                    <div class="label">
-                        Nearby Users
-                    </div>
-
-                    <div class="value">
-                        ${gate.nearby_users}
-                    </div>
-
-                </div>
-
-                <div class="box">
-
-                    <div class="label">
-                        Last Updated
-                    </div>
-
-                    <div class="value">
-                        ${gate.updated}
-                    </div>
-
-                </div>
-
-            </div>
-
-            `;
-
-        });
+        })
 
     });
 
+},
+
+function(error){
+
+    console.log(error);
+
+},
+
+{
+    enableHighAccuracy:true
 }
 
-function error(){
+);
 
-    alert(
-        "Please allow location access"
-    );
+setInterval(updateData,3000);
 
-}
-
-// AUTO REFRESH
-setInterval(sendLocation, 5000);
+updateData();
 
 </script>
 
