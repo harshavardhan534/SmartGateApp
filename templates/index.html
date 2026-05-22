@@ -272,14 +272,21 @@
 
                 if(data.status == "OPEN"){
 
-                    statusElement.className =
-                        "status open";
+    statusElement.className =
+        "status open";
 
-                }else{
+}
+else if(data.status == "CLOSED"){
 
-                    statusElement.className =
-                        "status closed";
-                }
+    statusElement.className =
+        "status closed";
+
+}
+else{
+
+    statusElement.className =
+        "status unknown";
+}
 
                 document.getElementById("gate")
                     .innerHTML =
