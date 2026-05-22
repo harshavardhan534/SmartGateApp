@@ -8,49 +8,50 @@ app = Flask(__name__)
 
 DATA_FILE = "database/data.json"
 
+# Store active users
 users = []
 
-# ---------------------------------
-# MULTIPLE GATES
-# ---------------------------------
+# ------------------------------------------------
+# MULTIPLE RAILWAY GATES
+# Replace with real coordinates
+# ------------------------------------------------
 
 gates = [
 
     {
-        "name": "Gate A",
+        "name": "Cantonment Gate",
         "lat": 15.1514586,
         "lon": 76.8938312
     },
 
     {
-        "name": "Gate B",
+        "name": "Radio Park Gate",
         "lat": 15.1445935,
         "lon": 76.9047562
     }
-
 ]
 
-# ---------------------------------
+# ------------------------------------------------
 # LOAD DATA
-# ---------------------------------
+# ------------------------------------------------
 
 def load_data():
 
     with open(DATA_FILE, "r") as file:
         return json.load(file)
 
-# ---------------------------------
+# ------------------------------------------------
 # SAVE DATA
-# ---------------------------------
+# ------------------------------------------------
 
 def save_data(data):
 
     with open(DATA_FILE, "w") as file:
         json.dump(data, file, indent=4)
 
-# ---------------------------------
-# DISTANCE CALCULATION
-# ---------------------------------
+# ------------------------------------------------
+# CALCULATE DISTANCE
+# ------------------------------------------------
 
 def calculate_distance(lat1, lon1, lat2, lon2):
 
@@ -68,9 +69,9 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
     return R * c * 1000
 
-# ---------------------------------
+# ------------------------------------------------
 # FIND NEAREST GATE
-# ---------------------------------
+# ------------------------------------------------
 
 def find_nearest_gate(user_lat, user_lon):
 
@@ -93,9 +94,9 @@ def find_nearest_gate(user_lat, user_lon):
 
     return nearest_gate, min_distance
 
-# ---------------------------------
+# ------------------------------------------------
 # HOME PAGE
-# ---------------------------------
+# ------------------------------------------------
 
 @app.route("/")
 def home():
@@ -109,9 +110,9 @@ def home():
         updated=data["last_updated"]
     )
 
-# ---------------------------------
-# RECEIVE LOCATION
-# ---------------------------------
+# ------------------------------------------------
+# RECEIVE USER LOCATION
+# ------------------------------------------------
 
 @app.route("/location", methods=["POST"])
 def location():
@@ -122,6 +123,7 @@ def location():
 
     users.append(user)
 
+    # Find nearest gate
     nearest_gate, current_distance = find_nearest_gate(
         user["lat"],
         user["lon"]
@@ -129,6 +131,7 @@ def location():
 
     waiting_users = 0
 
+    # Check all users
     for u in users:
 
         gate, distance = find_nearest_gate(
@@ -136,24 +139,41 @@ def location():
             u["lon"]
         )
 
+        # Only count nearby users
         if distance < 100:
 
             speed = u.get("speed")
 
+            # Some phones return None speed
             if speed is None or speed < 2:
 
                 waiting_users += 1
 
+    # Save waiting users
     data["waiting_users"] = waiting_users
-    data["last_updated"] = datetime.now().strftime("%I:%M:%S %p")
 
-    # Gate logic
+    # Last updated time
+    data["last_updated"] = datetime.now().strftime(
+        "%I:%M:%S %p"
+    )
+
+    # ------------------------------------------------
+    # GATE STATUS LOGIC
+    # ------------------------------------------------
+
     if waiting_users >= 3:
+
         data["status"] = "CLOSED"
+
     else:
+
         data["status"] = "OPEN"
 
     save_data(data)
+
+    # ------------------------------------------------
+    # RESPONSE
+    # ------------------------------------------------
 
     return jsonify({
 
@@ -161,15 +181,19 @@ def location():
 
         "status": data["status"],
 
+        "waiting_users": waiting_users,
+
         "distance": round(current_distance, 2),
 
-        "gate": nearest_gate["name"]
+        "nearest_gate": nearest_gate["name"],
+
+        "updated": data["last_updated"]
 
     })
 
-# ---------------------------------
+# ------------------------------------------------
 # RUN APP
-# ---------------------------------
+# ------------------------------------------------
 
 if __name__ == "__main__":
 
