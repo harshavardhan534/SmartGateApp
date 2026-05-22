@@ -16,29 +16,32 @@ DATA_FILE = "database/data.json"
 # GATE LOCATIONS
 # -----------------------------------
 
-gates = {
-
-    "Gate 1": {
+GATES = {
+    "gate1": {
+        "name": "Gate 1",
         "lat": 12.9716,
         "lon": 77.5946
     },
 
-    "Gate 2": {
+    "gate2": {
+        "name": "Gate 2",
         "lat": 12.9750,
         "lon": 77.5990
     }
-
 }
 
 # -----------------------------------
 # CREATE DATABASE IF NOT EXISTS
 # -----------------------------------
 
+if not os.path.exists("database"):
+    os.makedirs("database")
+
 if not os.path.exists(DATA_FILE):
 
     default_data = {
 
-        "Gate 1": {
+        "gate1": {
             "status": "NO DATA",
             "waiting_users": 0,
             "nearby_users": 0,
@@ -46,7 +49,7 @@ if not os.path.exists(DATA_FILE):
             "last_updated": "--"
         },
 
-        "Gate 2": {
+        "gate2": {
             "status": "NO DATA",
             "waiting_users": 0,
             "nearby_users": 0,
@@ -56,10 +59,7 @@ if not os.path.exists(DATA_FILE):
 
     }
 
-    os.makedirs("database", exist_ok=True)
-
     with open(DATA_FILE, "w") as file:
-
         json.dump(default_data, file, indent=4)
 
 # -----------------------------------
@@ -69,7 +69,6 @@ if not os.path.exists(DATA_FILE):
 def load_data():
 
     with open(DATA_FILE, "r") as file:
-
         return json.load(file)
 
 # -----------------------------------
@@ -79,7 +78,6 @@ def load_data():
 def save_data(data):
 
     with open(DATA_FILE, "w") as file:
-
         json.dump(data, file, indent=4)
 
 # -----------------------------------
@@ -111,12 +109,7 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 @app.route("/")
 def home():
 
-    data = load_data()
-
-    return render_template(
-        "index.html",
-        gates=data
-    )
+    return render_template("index.html")
 
 # -----------------------------------
 # SEND DATA TO WEBSITE
@@ -125,7 +118,9 @@ def home():
 @app.route("/data")
 def data():
 
-    return jsonify(load_data())
+    data = load_data()
+
+    return jsonify(data)
 
 # -----------------------------------
 # RECEIVE LOCATION
@@ -147,34 +142,28 @@ def location():
     # CHECK EACH GATE
     # -----------------------------------
 
-    for gate_name, gate in gates.items():
+    for gate_id, gate in GATES.items():
 
         gate_lat = gate["lat"]
         gate_lon = gate["lon"]
 
         distance = calculate_distance(
-
             user_lat,
             user_lon,
-
             gate_lat,
             gate_lon
-
         )
 
         nearby_users = 0
         waiting_users = 0
 
-        # Nearby only if within 100 meters
-
+        # Nearby if within 100m
         if distance <= 100:
 
             nearby_users = 1
 
-            # Waiting if slow speed
-
+            # Waiting if slow
             if speed < 2:
-
                 waiting_users = 1
 
         # -----------------------------------
@@ -197,7 +186,7 @@ def location():
         # SAVE GATE DATA
         # -----------------------------------
 
-        data[gate_name] = {
+        data[gate_id] = {
 
             "status": status,
 
@@ -216,7 +205,7 @@ def location():
     save_data(data)
 
     return jsonify({
-        "message": "Location received successfully"
+        "message": "Location received"
     })
 
 # -----------------------------------
@@ -225,7 +214,7 @@ def location():
 
 if __name__ == "__main__":
 
-    port = int(os.environ.get("PORT", 5000"))
+    port = int(os.environ.get("PORT", 5000))
 
     app.run(
         host="0.0.0.0",
