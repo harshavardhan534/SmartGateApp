@@ -18,15 +18,15 @@ users = []
 gates = [
 
     {
-        "name": "Gate A",
-        "lat": 12.9716,
-        "lon": 77.5946
+        "name": "Cantonment Gate",
+        "lat": 15.1514586,
+        "lon": 76.8938312
     },
 
     {
-        "name": "Gate B",
-        "lat": 12.9725,
-        "lon": 77.5955
+        "name": "Radio Park Gate",
+        "lat": 15.1445935,
+        "lon": 76.9047562
     }
 
 ]
