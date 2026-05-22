@@ -1,71 +1,91 @@
 from flask import Flask, render_template, request, jsonify
-import json
+from math import radians, sin, cos, sqrt, atan2
 from datetime import datetime
-from math import radians, cos, sin, sqrt, atan2
+import json
 import os
 
 app = Flask(__name__)
 
+# -----------------------------------
+# DATABASE FILE
+# -----------------------------------
+
 DATA_FILE = "database/data.json"
 
-# -----------------------------
+# -----------------------------------
 # GATE LOCATIONS
-# -----------------------------
-GATES = {
+# -----------------------------------
+
+gates = {
+
     "Gate 1": {
         "lat": 12.9716,
         "lon": 77.5946
     },
+
     "Gate 2": {
-        "lat": 12.9725,
-        "lon": 77.5930
+        "lat": 12.9750,
+        "lon": 77.5990
     }
+
 }
 
-# -----------------------------
-# LOAD DATA
-# -----------------------------
-def load_data():
+# -----------------------------------
+# CREATE DATABASE IF NOT EXISTS
+# -----------------------------------
 
-    if not os.path.exists(DATA_FILE):
+if not os.path.exists(DATA_FILE):
 
-        default_data = {
-            "gates": {
-                "Gate 1": {
-                    "status": "NO DATA",
-                    "waiting_users": 0,
-                    "nearby_users": 0,
-                    "distance": 0,
-                    "last_updated": "Never"
-                },
-                "Gate 2": {
-                    "status": "NO DATA",
-                    "waiting_users": 0,
-                    "nearby_users": 0,
-                    "distance": 0,
-                    "last_updated": "Never"
-                }
-            }
+    default_data = {
+
+        "Gate 1": {
+            "status": "NO DATA",
+            "waiting_users": 0,
+            "nearby_users": 0,
+            "distance": 0,
+            "last_updated": "--"
+        },
+
+        "Gate 2": {
+            "status": "NO DATA",
+            "waiting_users": 0,
+            "nearby_users": 0,
+            "distance": 0,
+            "last_updated": "--"
         }
 
-        save_data(default_data)
+    }
 
-        return default_data
+    os.makedirs("database", exist_ok=True)
+
+    with open(DATA_FILE, "w") as file:
+
+        json.dump(default_data, file, indent=4)
+
+# -----------------------------------
+# LOAD DATA
+# -----------------------------------
+
+def load_data():
 
     with open(DATA_FILE, "r") as file:
+
         return json.load(file)
 
-# -----------------------------
+# -----------------------------------
 # SAVE DATA
-# -----------------------------
+# -----------------------------------
+
 def save_data(data):
 
     with open(DATA_FILE, "w") as file:
+
         json.dump(data, file, indent=4)
 
-# -----------------------------
-# DISTANCE CALCULATOR
-# -----------------------------
+# -----------------------------------
+# DISTANCE FUNCTION
+# -----------------------------------
+
 def calculate_distance(lat1, lon1, lat2, lon2):
 
     R = 6371
@@ -84,9 +104,10 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 
     return R * c * 1000
 
-# -----------------------------
+# -----------------------------------
 # HOME PAGE
-# -----------------------------
+# -----------------------------------
+
 @app.route("/")
 def home():
 
@@ -94,12 +115,22 @@ def home():
 
     return render_template(
         "index.html",
-        gates=data["gates"]
+        gates=data
     )
 
-# -----------------------------
+# -----------------------------------
+# SEND DATA TO WEBSITE
+# -----------------------------------
+
+@app.route("/data")
+def data():
+
+    return jsonify(load_data())
+
+# -----------------------------------
 # RECEIVE LOCATION
-# -----------------------------
+# -----------------------------------
+
 @app.route("/location", methods=["POST"])
 def location():
 
@@ -109,63 +140,92 @@ def location():
 
     user_lat = user["latitude"]
     user_lon = user["longitude"]
-    speed = user["speed"]
 
-    for gate_name, gate in GATES.items():
+    speed = user.get("speed", 0)
+
+    # -----------------------------------
+    # CHECK EACH GATE
+    # -----------------------------------
+
+    for gate_name, gate in gates.items():
 
         gate_lat = gate["lat"]
         gate_lon = gate["lon"]
 
         distance = calculate_distance(
+
             user_lat,
             user_lon,
+
             gate_lat,
             gate_lon
+
         )
 
         nearby_users = 0
         waiting_users = 0
 
-        # User considered nearby only within 100m
+        # Nearby only if within 100 meters
+
         if distance <= 100:
 
             nearby_users = 1
 
-            # Waiting if speed less than 2
+            # Waiting if slow speed
+
             if speed < 2:
+
                 waiting_users = 1
 
-        # Gate status logic
+        # -----------------------------------
+        # STATUS LOGIC
+        # -----------------------------------
+
         if nearby_users == 0:
+
             status = "NO DATA"
 
         elif waiting_users >= 1:
+
             status = "CLOSED"
 
         else:
+
             status = "OPEN"
 
-        # Save gate data
-        data["gates"][gate_name] = {
+        # -----------------------------------
+        # SAVE GATE DATA
+        # -----------------------------------
+
+        data[gate_name] = {
+
             "status": status,
+
             "waiting_users": waiting_users,
+
             "nearby_users": nearby_users,
+
             "distance": round(distance, 1),
-            "last_updated": datetime.now().strftime("%I:%M:%S %p")
+
+            "last_updated": datetime.now().strftime(
+                "%I:%M:%S %p"
+            )
+
         }
 
     save_data(data)
 
     return jsonify({
-        "message": "Location received"
+        "message": "Location received successfully"
     })
 
-# -----------------------------
+# -----------------------------------
 # RUN APP
-# -----------------------------
+# -----------------------------------
+
 if __name__ == "__main__":
 
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5000"))
 
     app.run(
         host="0.0.0.0",
