@@ -1,147 +1,178 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Gate</title>
 
-<title>Railway Gate Tracker</title>
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    body{
+      background:#111827;
+      color:white;
+      text-align:center;
+      padding:20px;
+    }
 
-<link rel="stylesheet" href="/static/style.css">
+    h1{
+      margin-top:20px;
+      font-size:40px;
+      color:#00d4ff;
+    }
 
+    .card{
+      background:#1f2937;
+      padding:25px;
+      border-radius:20px;
+      margin-top:30px;
+      box-shadow:0 0 20px rgba(0,0,0,0.4);
+    }
+
+    button{
+      margin-top:20px;
+      padding:15px 30px;
+      font-size:18px;
+      border:none;
+      border-radius:12px;
+      background:#00b894;
+      color:white;
+      cursor:pointer;
+    }
+
+    button:hover{
+      background:#00a383;
+    }
+
+    #status{
+      margin-top:20px;
+      font-size:22px;
+      color:#facc15;
+    }
+
+    #location{
+      margin-top:20px;
+      font-size:18px;
+      line-height:1.8;
+    }
+
+    iframe{
+      width:100%;
+      height:350px;
+      border:none;
+      border-radius:20px;
+      margin-top:20px;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+  <h1>Smart Gate</h1>
 
-    <h1>Railway Gate Tracker</h1>
+  <div class="card">
 
-    <!-- USER INFO -->
+    <h2>Live User Location</h2>
 
-    <div class="user-box">
+    <button onclick="getLocation()">
+      Turn ON Location
+    </button>
 
-        <h2>Your Info</h2>
+    <div id="status"></div>
 
-        <p id="locationText">
+    <div id="location"></div>
 
-            Searching GPS...
+    <iframe
+      id="map"
+      src=""
+      allowfullscreen>
+    </iframe>
 
-        </p>
+  </div>
 
-        <p id="speedText">
+  <script>
 
-            Speed: 0 km/h
+    function getLocation(){
 
-        </p>
+      document.getElementById("status").innerHTML =
+        "Getting Location...";
 
-    </div>
+      if(navigator.geolocation){
 
-    <!-- GATE 1 -->
+        navigator.geolocation.getCurrentPosition(
 
-    <div class="gate-card clickable"
+          showPosition,
+          showError,
 
-        onclick="openRoute(
-            15.1514586,
-            76.8938312
-        )">
+          {
+            enableHighAccuracy:true,
+            timeout:10000,
+            maximumAge:0
+          }
 
-        <h2>Cantonment Gate</h2>
+        );
 
-        <p id="distance1">
+      }else{
 
-            Distance: --
+        document.getElementById("status").innerHTML =
+          "Geolocation not supported.";
 
-        </p>
+      }
+    }
 
-        <p id="waiting1">
+    function showPosition(position){
 
-            Waiting Users: 0
+      let lat = position.coords.latitude;
+      let lon = position.coords.longitude;
 
-        </p>
+      document.getElementById("status").innerHTML =
+        "Location Found Successfully";
 
-        <div id="status1" class="status unknown">
+      document.getElementById("location").innerHTML =
+        "<b>Latitude:</b> " + lat +
+        "<br><b>Longitude:</b> " + lon;
 
-            NO DATA
+      document.getElementById("map").src =
+        "https://maps.google.com/maps?q="
+        + lat + "," + lon +
+        "&z=15&output=embed";
+    }
 
-        </div>
+    function showError(error){
 
-        <button class="route-btn">
+      switch(error.code){
 
-            Open Route
+        case error.PERMISSION_DENIED:
 
-        </button>
+          document.getElementById("status").innerHTML =
+            "Location Permission Denied";
+          break;
 
-    </div>
+        case error.POSITION_UNAVAILABLE:
 
-    <!-- GATE 2 -->
+          document.getElementById("status").innerHTML =
+            "Location Unavailable";
+          break;
 
-    <div class="gate-card clickable"
+        case error.TIMEOUT:
 
-        onclick="openRoute(
-            15.1445935,
-            76.9047562
-        )">
+          document.getElementById("status").innerHTML =
+            "Request Timed Out";
+          break;
 
-        <h2>Radio Park Gate</h2>
+        default:
 
-        <p id="distance2">
+          document.getElementById("status").innerHTML =
+            "Unknown Error";
+      }
+    }
 
-            Distance: --
-
-        </p>
-
-        <p id="waiting2">
-
-            Waiting Users: 0
-
-        </p>
-
-        <div id="status2" class="status unknown">
-
-            NO DATA
-
-        </div>
-
-        <button class="route-btn">
-
-            Open Route
-
-        </button>
-
-    </div>
-
-    <!-- GOOGLE MAP -->
-
-    <div class="map-card">
-
-        <h2>Live Google Map</h2>
-
-        <iframe
-
-            id="mapFrame"
-
-            width="100%"
-
-            height="350"
-
-            style="border:0; border-radius:20px;"
-
-            loading="lazy"
-
-            allowfullscreen
-
-            referrerpolicy="no-referrer-when-downgrade"
-
-            src="https://maps.google.com/maps?q=15.1514586,76.8938312&z=15&output=embed">
-
-        </iframe>
-
-    </div>
-
-</div>
-
-<script src="/static/script.js"></script>
+  </script>
 
 </body>
 </html>
