@@ -20,7 +20,9 @@ function openRoute(destLat,destLng){
 
     const url =
 
-        "https://www.google.com/maps/dir/" +
+        "https://www.google.com/maps/dir/?api=1" +
+
+        "&origin=" +
 
         lastLat +
 
@@ -28,15 +30,17 @@ function openRoute(destLat,destLng){
 
         lastLng +
 
-        "/" +
+        "&destination=" +
 
         destLat +
 
         "," +
 
-        destLng;
+        destLng +
 
-    window.open(url,"_blank");
+        "&travelmode=driving";
+
+    window.location.href = url;
 }
 
 // =========================================
@@ -92,20 +96,6 @@ function updateLocation(){
 
                 lastLat = lat;
                 lastLng = lng;
-
-                // UPDATE MAP
-
-                document.getElementById("mapFrame").src =
-
-                    "https://maps.google.com/maps?q=" +
-
-                    lat +
-
-                    "," +
-
-                    lng +
-
-                    "&z=16&output=embed";
 
                 // SPEED
 
@@ -263,6 +253,6 @@ function updateLocation(){
 
 updateLocation();
 
-// AUTO REFRESH
+// AUTO REFRESH EVERY 5 SEC
 
 setInterval(updateLocation,5000);
