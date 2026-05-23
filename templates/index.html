@@ -39,7 +39,12 @@
 
     <!-- GATE 1 -->
 
-    <div class="gate-card">
+    <div class="gate-card clickable"
+
+        onclick="openRoute(
+            15.1514586,
+            76.8938312
+        )">
 
         <h2>Cantonment Gate</h2>
 
@@ -61,11 +66,22 @@
 
         </div>
 
+        <button class="route-btn">
+
+            Open Route
+
+        </button>
+
     </div>
 
     <!-- GATE 2 -->
 
-    <div class="gate-card">
+    <div class="gate-card clickable"
+
+        onclick="openRoute(
+            15.1445935,
+            76.9047562
+        )">
 
         <h2>Radio Park Gate</h2>
 
@@ -86,6 +102,40 @@
             NO DATA
 
         </div>
+
+        <button class="route-btn">
+
+            Open Route
+
+        </button>
+
+    </div>
+
+    <!-- GOOGLE MAP -->
+
+    <div class="map-card">
+
+        <h2>Live Google Map</h2>
+
+        <iframe
+
+            id="mapFrame"
+
+            width="100%"
+
+            height="350"
+
+            style="border:0; border-radius:20px;"
+
+            loading="lazy"
+
+            allowfullscreen
+
+            referrerpolicy="no-referrer-when-downgrade"
+
+            src="https://maps.google.com/maps?q=15.1514586,76.8938312&z=15&output=embed">
+
+        </iframe>
 
     </div>
 
