@@ -96,24 +96,6 @@ p{
     background:gray;
 }
 
-.map-card{
-
-    background:#1f1f1f;
-
-    padding:25px;
-
-    border-radius:20px;
-
-    margin-bottom:25px;
-
-    text-align:center;
-}
-
-.map-card h2{
-
-    margin-bottom:20px;
-}
-
 .route-btn{
 
     background:#2196f3;
