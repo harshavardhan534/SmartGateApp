@@ -93,25 +93,17 @@ def location():
             # GATE STATUS
             # =========================================
 
-            # USER NEAR GATE
-
             if distance < 300:
-
-                # USER WAITING
 
                 if speed < 3:
 
                     status = "CLOSED"
                     waiting = 1
 
-                # USER MOVING
-
                 else:
 
                     status = "OPEN"
                     waiting = 0
-
-            # NO USER NEAR GATE
 
             else:
 
