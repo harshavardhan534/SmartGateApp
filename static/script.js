@@ -6,6 +6,40 @@ let lastLat = null;
 let lastLng = null;
 
 // =========================================
+// OPEN GOOGLE MAP ROUTE
+// =========================================
+
+function openRoute(destLat,destLng){
+
+    if(lastLat == null || lastLng == null){
+
+        alert("Waiting for GPS...");
+
+        return;
+    }
+
+    const url =
+
+        "https://www.google.com/maps/dir/" +
+
+        lastLat +
+
+        "," +
+
+        lastLng +
+
+        "/" +
+
+        destLat +
+
+        "," +
+
+        destLng;
+
+    window.open(url,"_blank");
+}
+
+// =========================================
 // STATUS COLORS
 // =========================================
 
@@ -16,8 +50,6 @@ function setStatus(id,status){
 
     box.className = "status";
 
-    // OPEN
-
     if(status == "OPEN"){
 
         box.innerText = "OPEN";
@@ -25,16 +57,12 @@ function setStatus(id,status){
         box.classList.add("open");
     }
 
-    // CLOSED
-
     else if(status == "CLOSED"){
 
         box.innerText = "CLOSED";
 
         box.classList.add("closed");
     }
-
-    // UNKNOWN
 
     else{
 
@@ -65,6 +93,20 @@ function updateLocation(){
                 lastLat = lat;
                 lastLng = lng;
 
+                // UPDATE MAP
+
+                document.getElementById("mapFrame").src =
+
+                    "https://maps.google.com/maps?q=" +
+
+                    lat +
+
+                    "," +
+
+                    lng +
+
+                    "&z=16&output=embed";
+
                 // SPEED
 
                 let speed =
@@ -76,8 +118,6 @@ function updateLocation(){
                 }
 
                 speed = speed * 3.6;
-
-                // REMOVE GPS NOISE
 
                 if(speed < 3){
 
@@ -188,8 +228,6 @@ function updateLocation(){
 
             console.log(error);
 
-            // USE PREVIOUS LOCATION
-
             if(lastLat != null){
 
                 document.getElementById("locationText").innerHTML =
@@ -225,6 +263,6 @@ function updateLocation(){
 
 updateLocation();
 
-// AUTO REFRESH EVERY 5 SEC
+// AUTO REFRESH
 
 setInterval(updateLocation,5000);
